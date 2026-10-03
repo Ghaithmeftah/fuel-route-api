@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Route map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; }
+    #map { height: 100%; }
+    .summary {
+      position: absolute; top: 12px; right: 12px; z-index: 1000;
+      background: #fff; padding: 12px 16px; border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .25); font-size: 14px; max-width: 280px;
+    }
+    .summary h1 { font-size: 15px; margin: 0 0 8px; }
+    .summary p { margin: 2px 0; }
+    .error { padding: 24px; color: #b00020; }
+  </style>
+</head>
+<body>
+{% if error %}
+  <p class="error">{{ error }}</p>
+{% else %}
+  <div class="summary">
+    <h1>{{ trip.start.label }} &rarr; {{ trip.finish.label }}</h1>
+    <p>Distance: {{ trip.distance_miles }} mi</p>
+    <p>Fuel stops: {{ trip.fuel_stops|length }}</p>
+    <p>Fuel: {{ trip.total_gallons }} gal</p>
+    <p><strong>Total cost: ${{ trip.total_fuel_cost }}</strong></p>
+  </div>
+  <div id="map"></div>
+
+  {{ trip|json_script:"trip-data" }}
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const trip = JSON.parse(document.getElementById('trip-data').textContent);
+    const map = L.map('map');
+
+    // OSM tile servers reject requests without a Referer, and Django's default
+    // Referrer-Policy (same-origin) strips it for cross-origin requests.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    const line = trip.route.coordinates.map(([lng, lat]) => [lat, lng]);
+    const route = L.polyline(line, { color: '#2563eb', weight: 4 }).addTo(map);
+    map.fitBounds(route.getBounds(), { padding: [30, 30] });
+
+    L.circleMarker([trip.start.lat, trip.start.lng], { radius: 8, color: '#16a34a', fillOpacity: 1 })
+      .addTo(map).bindPopup('Start: ' + trip.start.label);
+    L.circleMarker([trip.finish.lat, trip.finish.lng], { radius: 8, color: '#dc2626', fillOpacity: 1 })
+      .addTo(map).bindPopup('Finish: ' + trip.finish.label);
+
+    trip.fuel_stops.forEach((stop, i) => {
+      L.marker([stop.lat, stop.lng]).addTo(map).bindPopup(
+        `<b>${i + 1}. ${stop.name}</b><br>${stop.address}, ${stop.city}, ${stop.state}<br>` +
+        `Mile ${stop.mile} &middot; $${stop.price_per_gallon}/gal<br>` +
+        `${stop.gallons} gal = $${stop.cost}`
+      );
+    });
+  </script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+  "info": {
+    "name": "Fuel Route API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" }
+  ],
+  "item": [
+    {
+      "name": "Route - New York to Los Angeles",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/route/?start=New York, NY&finish=Los Angeles, CA",
+          "host": ["{{base_url}}"],
+          "path": ["api", "route", ""],
+          "query": [
+            { "key": "start", "value": "New York, NY" },
+            { "key": "finish", "value": "Los Angeles, CA" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Route - Dallas to Chicago",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/route/?start=Dallas, TX&finish=Chicago, IL",
+          "host": ["{{base_url}}"],
+          "path": ["api", "route", ""],
+          "query": [
+            { "key": "start", "value": "Dallas, TX" },
+            { "key": "finish", "value": "Chicago, IL" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Route - coordinates input",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/route/?start=47.6062,-122.3321&finish=25.7617,-80.1918",
+          "host": ["{{base_url}}"],
+          "path": ["api", "route", ""],
+          "query": [
+            { "key": "start", "value": "47.6062,-122.3321" },
+            { "key": "finish", "value": "25.7617,-80.1918" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Route - invalid location",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{base_url}}/api/route/?start=Toronto, ON&finish=Chicago, IL",
+          "host": ["{{base_url}}"],
+          "path": ["api", "route", ""],
+          "query": [
+            { "key": "start", "value": "Toronto, ON" },
+            { "key": "finish", "value": "Chicago, IL" }
+          ]
+        }
+      }
+    }
+  ]
+}
